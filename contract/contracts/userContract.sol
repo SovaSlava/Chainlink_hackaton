@@ -26,8 +26,10 @@ contract userContract is ChainlinkClient, ConfirmedOwner {
 
     function requestData() public returns (bytes32 requestId) {
         Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
+        req.add("type", 'extract');
         req.add("url", "https://chain.link/press");
         req.add("regexp", 'h3-newstitle">(.*?)<');
+        req.add("flags", 'gm');
         return sendChainlinkRequest(req, fee);
     }
 
