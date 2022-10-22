@@ -1,4 +1,5 @@
 const { Requester, Validator } = require('@chainlink/external-adapter')
+const fs = require('fs');
 
 // Define custom error scenarios for the API.
 // Return true for the adapter to retry.
@@ -9,21 +10,22 @@ const customError = (data) => {
 
 const customParams = {
   url: true,
-  type: true,
-  regexp: true,
-  flags: false
+  type: true, // getData, match
+  regexp: true
+  // default gm
+//  matchNum: false // only for getData. if exists -> arr[matchNum], else -> all matches 
 
 }
 
 const createRequest = (input, callback) => {
-  console.log('i1 - ' + JSON.stringify(input))
   // The Validator helps you validate the Chainlink request data
   const validator = new Validator(input, customParams)
   const jobRunID = validator.validated.id;
   const url = validator.validated.data.url;
-//  const type = validator.validated.data.type;
+  const regexp = validator.validated.data.regexp;
+  const type = validator.validated.data.type;
 //  const regexp = validator.validated.data.regexp;
-//  const flags = validator.validated.data.flags;
+ //  const flags = validator.validated.data.flags;
 
 
 
@@ -38,14 +40,24 @@ const createRequest = (input, callback) => {
   // or connection failure
   Requester.request(url, customError)
     .then(response => {
-      console.log(response.data)
-      // It's common practice to store the desired value at the top-level
-      // result key. This allows different adapters to be compatible with
-      // one another.
-   //  response.data.result = Requester.validateResultNumber(response.data, [tsyms])
+      let tempResArray=[];
+      let resArray=[];
+      console.log('1 - ' + type)
+      if(type == "getData") {
+        const re  = new RegExp(regexp,"igm")
+        const found = response.data.matchAll(re)
+        
+        Array.from(found, (res) => tempResArray.push(res[1]));
+        if(input.data["matchIndex"] !== undefined && input.data["matchIndex"] <= tempResArray.length) {
+          resArray.push(tempResArray[input.data["matchIndex"]]);
+        }
+        else {
+          resArray = tempResArray;
+        }
+    }
       callback(response.status, {
         jobRunID,
-        data: {"val":33},
+        data: {"val":resArray},
         //data: response.data,
         //result: "privete",
         statusCode: response.status
