@@ -12,7 +12,7 @@ async function main() {
     [owner] = await ethers.getSigners();
     getDataFromSite = await new GetDataFromSite__factory(owner).deploy(chainlinkToken, chainlinkOracle, jobIdForExtract, jobIdForMatch);
     await getDataFromSite.deployed();
-    console.log("GetDataFromSite contract Address:", getDataFromSite.address);
+    console.log(`GetDataFromSite contract Address: ${getDataFromSite.address}`);
     await new Promise(r => setTimeout(r, 30000));
     await hre.run('verify:verify', {
       address: getDataFromSite.address,

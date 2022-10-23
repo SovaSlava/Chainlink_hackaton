@@ -38,19 +38,15 @@ contract GetDataFromSite is ChainlinkClient, ConfirmedOwner {
     function extractText(
         string calldata url,
         string calldata regexp,
-        string calldata flags,
         string calldata matchIndex
         ) public {
         Chainlink.Request memory req = buildChainlinkRequest(jobIdForExtract, address(this), this.fulfill.selector);
-        req.add("type", 'extract');
         req.add("url", url);
         req.add("regexp", regexp);
-        req.add("flags", flags);
         req.add("matchIndex", matchIndex);
         // Example:
         //req.add("url", "https://chain.link/press");
-        //req.add("regexp", 'h3-newstitle">(.*?)<');
-        //req.add("flags", 'gm');
+        //req.add("regexp", '/h3-newstitle">(.*?)</gim');
         //req.add("matchIndex", matchIndex); //start from 0
         bytes32 requestId = sendChainlinkRequest(req, fee);
         typeOfRequest[requestId] = 0; // extract
@@ -58,18 +54,14 @@ contract GetDataFromSite is ChainlinkClient, ConfirmedOwner {
 
     function isTextMatch(
         string calldata url,
-        string calldata regexp,
-        string calldata flags
+        string calldata regexp
     ) public {
         Chainlink.Request memory req = buildChainlinkRequest(jobIdForMatch, address(this), this.fulfill.selector);
-        req.add("type", 'match');
         req.add("url", url);
         req.add("regexp", regexp);
-        req.add("flags", flags);
         // Example:
         //req.add("url", "https://chain.link/press");
-        //req.add("regexp", "Latest\\snews\\sabout\\sChainlink");
-        //req.add("flags", 'gm');
+        //req.add("regexp", "/Latest\\snews\\sabout\\sChainlink/gim");
         bytes32 requestId = sendChainlinkRequest(req, fee);
         typeOfRequest[requestId] = 1; // match
     }

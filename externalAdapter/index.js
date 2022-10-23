@@ -8,33 +8,39 @@ const customError = (data) => {
   return false
 }
 
-const customParams = {
-  url: true,
-  type: true, // getData, match
-  regexp: true
-  // default gm
-//  matchNum: false // only for getData. if exists -> arr[matchNum], else -> all matches 
-
+const CumstomParams = {
+  "extract": { 
+    url: true,
+    regexp: true,
+    matchIndex: true
+  },
+  "match": { 
+    url: true,
+    regexp: true
+  }
 }
+
 
 const createRequest = (input, callback) => {
   // The Validator helps you validate the Chainlink request data
-  const validator = new Validator(input, customParams)
+  let jobType, validator;
+  switch(input.id) {
+    case "e7fb2c89-29c6-47d0-96c6-ab4a04c2ea22":  jobType="extract"; 
+                                                  validator = new Validator(input, CumstomParams.extract); 
+                                                  const matchIndex = validator.validated.data.matchIndex; console.log('extract')
+                                                  break;
+    case "37fbf90b-7721-43a1-b91e-3726348bcfcc":  jobType="match";   
+                                                  validator = new Validator(input, CumstomParams.match);  console.log('match')
+                                                  break;   
+  }
+  console.log('id -' + input.id)
+  console.log('t - ' + jobType)
   const jobRunID = validator.validated.id;
   const url = validator.validated.data.url;
   const regexp = validator.validated.data.regexp;
-  const type = validator.validated.data.type;
-//  const regexp = validator.validated.data.regexp;
- //  const flags = validator.validated.data.flags;
 
 
 
-  // This is where you would add method and headers
-  // you can add method like GET or POST and add it to the config
-  // The default is GET requests
-  // method = 'get' 
-  // headers = 'headers.....'
-  const config = "https://google.com"
 
   // The Requester allows API calls be retry in case of timeout
   // or connection failure
@@ -42,27 +48,32 @@ const createRequest = (input, callback) => {
     .then(response => {
       let tempResArray=[];
       let resArray=[];
-      console.log('1 - ' + type)
-      if(type == "getData") {
-        const re  = new RegExp(regexp,"igm")
+      let parseRegExp = Array.from(regexp.matchAll(/\/(.*)\/(.*)$/g));
+      let clearRegExp = parseRegExp[0][1];
+      let flags = parseRegExp[0][2];
+      let re  = new RegExp(clearRegExp,flags)
+      if(jobType == "extract") {
+        
         const found = response.data.matchAll(re)
         
         Array.from(found, (res) => tempResArray.push(res[1]));
-        if(input.data["matchIndex"] !== undefined && input.data["matchIndex"] <= tempResArray.length) {
+        if(input.data["matchIndex"] <= tempResArray.length) {
           resArray.push(tempResArray[input.data["matchIndex"]]);
         }
         else {
           resArray = tempResArray;
+          
         }
+    } 
+    else {
+      const re  = new RegExp(clearRegExp,flags)
+      resArray.push(String(re.test(response.data)));
     }
       callback(response.status, {
         jobRunID,
         data: {"val":resArray},
-        //data: response.data,
-        //result: "privete",
         statusCode: response.status
       })
-      //  callback(response.status, Requester.success(jobRunID, response))
     })
     .catch(error => {
       callback(500, Requester.errored(jobRunID, error))
