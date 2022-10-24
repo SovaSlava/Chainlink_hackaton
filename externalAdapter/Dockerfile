@@ -9,7 +9,7 @@ COPY yarn.lock ./
 
 USER node
 
-RUN yarn
+RUN npm install
 
 COPY --chown=node:node . .
 
