@@ -84,4 +84,9 @@ contract GetDataFromSite is ChainlinkClient, ConfirmedOwner {
         LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
         require(link.transfer(msg.sender, link.balanceOf(address(this))), 'Unable to transfer');
     }
+
+    function clearResults() external onlyOwner {
+        matchTextResult = '';
+        extractTextResult = '';
+    }
 }

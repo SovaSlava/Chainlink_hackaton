@@ -24,17 +24,15 @@ const CumstomParams = {
 const createRequest = (input, callback) => {
   // The Validator helps you validate the Chainlink request data
   let jobType, validator;
-  switch(input.id) {
-    case "e7fb2c89-29c6-47d0-96c6-ab4a04c2ea22":  jobType="extract"; 
+  switch(input.id.slice(2)) {
+    case "e7fb2c8929c647d096c6ab4a04c2ea22":  jobType="extract"; 
                                                   validator = new Validator(input, CumstomParams.extract); 
                                                   const matchIndex = validator.validated.data.matchIndex; console.log('extract')
                                                   break;
-    case "37fbf90b-7721-43a1-b91e-3726348bcfcc":  jobType="match";   
+    case "37fbf90b772143a1b91e3726348bcfcc":  jobType="match";   
                                                   validator = new Validator(input, CumstomParams.match);  console.log('match')
                                                   break;   
   }
-  console.log('id -' + input.id)
-  console.log('t - ' + jobType)
   const jobRunID = validator.validated.id;
   const url = validator.validated.data.url;
   const regexp = validator.validated.data.regexp;

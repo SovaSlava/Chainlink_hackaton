@@ -6,9 +6,9 @@ async function main() {
     let owner:SignerWithAddress;
     let getDataFromSite:GetDataFromSite;
     let chainlinkToken = "0x326C977E6efc84E512bB9C30f76E30c160eD06FB"; // goerli
-    let chainlinkOracle = "0x68c7C58ADE6E0CA18325F62248dCe42c36633B4E";
-    let jobIdForExtract = ethers.utils.toUtf8Bytes("3b16b512754146aba3f2205d77b51ea6");
-    let jobIdForMatch =   ethers.utils.toUtf8Bytes("3b16b512754146aba3f2205d77b51ea6");
+    let chainlinkOracle = "0xD2B084349963897762FA223b3C2B72AC0378Ccfd";
+    let jobIdForExtract = ethers.utils.toUtf8Bytes("e7fb2c8929c647d096c6ab4a04c2ea22");
+    let jobIdForMatch =   ethers.utils.toUtf8Bytes("37fbf90b772143a1b91e3726348bcfcc");
     [owner] = await ethers.getSigners();
     getDataFromSite = await new GetDataFromSite__factory(owner).deploy(chainlinkToken, chainlinkOracle, jobIdForExtract, jobIdForMatch);
     await getDataFromSite.deployed();
