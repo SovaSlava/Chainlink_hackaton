@@ -1,8 +1,6 @@
-const { Requester, Validator } = require('@chainlink/external-adapter')
-const fs = require('fs');
-
-// Define custom error scenarios for the API.
-// Return true for the adapter to retry.
+import { Requester, Validator } from '@chainlink/external-adapter'
+import * as IPFS from 'ipfs'
+const node = await IPFS.create()
 const customError = (data) => {
   if (data.Response === 'Error') return true
   return false
@@ -17,95 +15,115 @@ const CumstomParams = {
   "match": { 
     url: true,
     regexp: true
+  },
+  "multiExtract": { 
+    url: true,
+    regexp: true
   }
 }
 
 
-const createRequest = (input, callback) => {
-  // The Validator helps you validate the Chainlink request data
-  let jobType, validator;
-  switch(input.id.slice(2)) {
-    case "e7fb2c8929c647d096c6ab4a04c2ea22":  jobType="extract"; 
-                                                  validator = new Validator(input, CumstomParams.extract); 
-                                                  const matchIndex = validator.validated.data.matchIndex; console.log('extract')
+export const createRequest = async (input, callback) => {
+
+  let jobType = input["jobType"];
+  let validator;
+  switch(jobType) {
+    case "extract":                              validator = new Validator(input, CumstomParams.extract); 
+                                                  const matchIndex = validator.validated.data.matchIndex; 
                                                   break;
-    case "37fbf90b772143a1b91e3726348bcfcc":  jobType="match";   
-                                                  validator = new Validator(input, CumstomParams.match);  console.log('match')
+    case "match":                                validator = new Validator(input, CumstomParams.match);  
                                                   break;   
+    case "multiExtract":                          validator = new Validator(input, CumstomParams.multiExtract);  
+                                                  break;  
+
   }
+  
   const jobRunID = validator.validated.id;
   const url = validator.validated.data.url;
   const regexp = validator.validated.data.regexp;
 
+  let response= {
+    data:"",
+    status:200
+  };
+  if(/^ipfs/.test(url)) {
+    const ipfsUrlMatch = url.match(/:\/\/(.*)/)
+ 
+    let stream = node.cat(ipfsUrlMatch[1])
+  
+    const decoder = new TextDecoder()
+    try {
+    for await (const chunk of stream) {
+      response.data += decoder.decode(chunk, { stream: true })
+    }
+  }
+  catch(error) {
+    callback(500, Requester.errored(jobRunID, error))
+  }
+
+    //console.log('ipfs data - ' + response.data)
+    //console.log('url ipfs')
+  }
+  else if(/^http/.test(url)){
+    //console.log('url - http')
+    await Requester.request(url, customError)
+      .then(responseHttp => {
+        response.data = responseHttp.data;
+        response.status = responseHttp.status;
+      })
+      .catch(error => {
+        callback(500, Requester.errored(jobRunID, error))
+      // callback(500,  error)
+      })
+
+   
+  }
+
+  console.log('responseData - ' + JSON.stringify(response))
+//////
+
+//QmPChd2hVbrJ6bfo3WBcTW4iZnpHm8TEzWkLHmLpXhF68A
 
 
 
   // The Requester allows API calls be retry in case of timeout
   // or connection failure
-  Requester.request(url, customError)
-    .then(response => {
+console.log('jobType - ' + jobType)
+     // console.log('js - ' + response.data)
       let tempResArray=[];
       let resArray=[];
       let parseRegExp = Array.from(regexp.matchAll(/\/(.*)\/(.*)$/g));
       let clearRegExp = parseRegExp[0][1];
       let flags = parseRegExp[0][2];
       let re  = new RegExp(clearRegExp,flags)
-      if(jobType == "extract") {
+      if(jobType == "extract" || jobType=="multiExtract") {
         
         const found = response.data.matchAll(re)
         
         Array.from(found, (res) => tempResArray.push(res[1]));
-        if(input.data["matchIndex"] <= tempResArray.length) {
+        if(jobType=="extract" && input.data["matchIndex"] <= tempResArray.length) {
           resArray.push(tempResArray[input.data["matchIndex"]]);
         }
         else {
           resArray = tempResArray;
-          
+        
         }
+        console.log(resArray)
     } 
-    else {
+    else if(jobType="match") {
       const re  = new RegExp(clearRegExp,flags)
       resArray.push(String(re.test(response.data)));
     }
+    
       callback(response.status, {
         jobRunID,
         data: {"val":resArray},
         statusCode: response.status
       })
-    })
-    .catch(error => {
-      callback(500, Requester.errored(jobRunID, error))
-    })
-}
+  
+    }
 
-// This is a wrapper to allow the function to work with
-// GCP Functions
-exports.gcpservice = (req, res) => {
-  createRequest(req.body, (statusCode, data) => {
-    res.status(statusCode).send(data)
-  })
-}
-
-// This is a wrapper to allow the function to work with
-// AWS Lambda
-exports.handler = (event, context, callback) => {
-  createRequest(event, (statusCode, data) => {
-    callback(null, data)
-  })
-}
-
-// This is a wrapper to allow the function to work with
-// newer AWS Lambda implementations
-exports.handlerv2 = (event, context, callback) => {
-  createRequest(JSON.parse(event.body), (statusCode, data) => {
-    callback(null, {
-      statusCode: statusCode,
-      body: JSON.stringify(data),
-      isBase64Encoded: false
-    })
-  })
-}
 
 // This allows the function to be exported for testing
 // or for running in express
-module.exports.createRequest = createRequest
+//module.exports.createRequest = createRequest
