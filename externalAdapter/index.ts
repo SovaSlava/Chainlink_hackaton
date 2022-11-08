@@ -1,5 +1,4 @@
 import { Requester, Validator } from '@chainlink/ea-bootstrap'
-import { create }  from "ipfs"
 const customError = (data:string) => {
   return false
 }
@@ -42,7 +41,6 @@ const defaultArgs: defaultArgsTypes = {
 };
 type jobTypeArg = "match" | "extract" | "multiExtract";
 export const createRequest = async (
-  ipfsNode:Awaited<ReturnType<typeof create>>, 
   input:{
     "jobType":jobTypeArg, 
     "jobRunID":string, 
@@ -61,30 +59,17 @@ export const createRequest = async (
 
   
   const jobRunID:string = validator.validated.id ;
-  const url = validator.validated.data.url;
+  let url = validator.validated.data.url;
   const regexp = validator.validated.data.regexp;
 
   let response= {
     data:""
   };
+  
   if(/^ipfs/.test(url)) {
     const ipfsUrlMatch = url.match(/:\/\/(.*)/)
- 
-    let stream = ipfsNode.cat(ipfsUrlMatch[1])
-  
-    const decoder = new TextDecoder()
-    try {
-    for await (const chunk of stream) {
-      response.data += decoder.decode(chunk, { stream: true })
-    }
-    receivedData=true;
+    url = `https://cloudflare-ipfs.com/ipfs/${ipfsUrlMatch[1]}`;
   }
-  catch(error) {
-   callback({jobRunID, data: { requestStatus:errorStatus.connectError, result:defaultArgs[jobType as keyof defaultArgsTypes] } })
-  }
-
-  }
-  else if(/^http/.test(url)){
     await Requester.request(url, customError)
       .then(responseHttp => {
         response.data = responseHttp.data;
@@ -95,7 +80,7 @@ export const createRequest = async (
       })
 
    
-  }
+  
 
 
 console.log('jobType - ' + jobType)

@@ -21,6 +21,7 @@ contract AnyDataRequester is ChainlinkClient, ConfirmedOwner {
     event RequestError(bytes32 requestId, uint requestStatus);
 
     modifier checkResponseStatus(bytes32 requestId, uint responseStatus) {
+        lastResponseStatus = responseStatus;
         if(responseStatus == 0) {
             _;
         }
@@ -123,6 +124,7 @@ contract AnyDataRequester is ChainlinkClient, ConfirmedOwner {
     function clearResults() external onlyOwner {
         matchTextResult = false;
         extractTextResult = '';
+        lastResponseStatus = 0;
         delete multipliExtractTextResult;
     }
 }
