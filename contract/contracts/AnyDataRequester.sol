@@ -5,7 +5,7 @@ import '@chainlink/contracts/src/v0.8/ChainlinkClient.sol';
 import '@chainlink/contracts/src/v0.8/ConfirmedOwner.sol';
 
 
-contract GetAnyData is ChainlinkClient, ConfirmedOwner {
+contract AnyDataRequester is ChainlinkClient, ConfirmedOwner {
     using Chainlink for Chainlink.Request;
 
     // Results

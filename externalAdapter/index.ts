@@ -3,9 +3,11 @@ import { create }  from "ipfs"
 const customError = (data:string) => {
   return false
 }
-type resultDate = {
-  status:number,
-  data:string | string[] | boolean
+type callbackType = {
+  jobRunID:string,
+  data:{ result: string | string[] | boolean,
+         requestStatus: number
+  }
 }
 const CustomParams =  {
   "extract": { 
@@ -47,7 +49,7 @@ export const createRequest = async (
     "data":{matchIndex:string}
   }, 
   callback:(
-    callbackData:resultDate
+    callbackData:callbackType
   ) => void) => {
   let receivedData:boolean=false;
   const jobType:string = input["jobType"];
@@ -78,7 +80,7 @@ export const createRequest = async (
     receivedData=true;
   }
   catch(error) {
-   callback({status:errorStatus.connectError, data:defaultArgs[jobType as keyof defaultArgsTypes] } )
+   callback({jobRunID, data: { requestStatus:errorStatus.connectError, result:defaultArgs[jobType as keyof defaultArgsTypes] } })
   }
 
   }
@@ -89,7 +91,7 @@ export const createRequest = async (
         receivedData=true;
       })
       .catch(error => {
-        callback({status:errorStatus.connectError, data:defaultArgs[jobType as keyof defaultArgsTypes] } )
+        callback({jobRunID, data: { requestStatus:errorStatus.connectError, result:defaultArgs[jobType as keyof defaultArgsTypes] }} )
       })
 
    
@@ -114,7 +116,7 @@ console.log('jobType - ' + jobType)
       regexpOK = true;
       }
       catch(error) {
-        callback({status:errorStatus.regexpError, data:defaultArgs[jobType as keyof defaultArgsTypes] } )
+        callback({ jobRunID, data: { requestStatus:errorStatus.regexpError, result:defaultArgs[jobType as keyof defaultArgsTypes] } } )
       }
       if(regexpOK && receivedData) {
         if(jobType == "extract" || jobType=="multiExtract") {
@@ -135,10 +137,10 @@ console.log('jobType - ' + jobType)
         }
         console.log('resArray' + JSON.stringify(resArray))
 
-        callback({status:0, data:resArray } )
+        callback({ jobRunID, data: { requestStatus:0, result:resArray } } )
     } 
     else if(jobType=="match") {
-      callback({status:0, data:re.test(response.data) } )
+      callback({ jobRunID, data: { requestStatus:0, result:re.test(response.data) } } )
       }
     }
   }

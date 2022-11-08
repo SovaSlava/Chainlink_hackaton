@@ -5,9 +5,11 @@ import { create }  from "ipfs"
 const app:Express = express()
 const port = process.env.EA_PORT || 8080
 const node = await create();
-type resultDate = {
-  status:number,
-  data:string | string[] | boolean
+type callbackType = {
+  jobRunID:string,
+  data:{ result: string | string[] | boolean,
+         requestStatus: number
+  }
 }
 
 app.use(express.json())
@@ -15,7 +17,7 @@ app.use(express.json())
 app.post('/', (req:Request, res:Response) => {
   console.log(`Request data: ${req.body}`)
  
-  createRequest(node, req.body, (callbackData:resultDate) => {
+  createRequest(node, req.body, (callbackData:callbackType) => {
     res.status(200).json(callbackData)
   })
   
