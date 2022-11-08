@@ -10,7 +10,7 @@ COPY yarn.lock ./
 USER node
 
 RUN npm install
-
+RUN tsc
 COPY --chown=node:node . .
 
 CMD [ "node", "app.js" ]

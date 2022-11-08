@@ -8,9 +8,10 @@ async function main() {
     let chainlinkToken = "0x326C977E6efc84E512bB9C30f76E30c160eD06FB"; // goerli
     let chainlinkOracle = "0xD2B084349963897762FA223b3C2B72AC0378Ccfd";
     let jobIdForExtract = ethers.utils.toUtf8Bytes("e7fb2c8929c647d096c6ab4a04c2ea22");
-    let jobIdForMatch =   ethers.utils.toUtf8Bytes("37fbf90b772143a1b91e3726348bcfcc");
+    let jobIdForMatch =  ethers.utils.toUtf8Bytes("37fbf90b772143a1b91e3726348bcfcc");
+    let jobIdForMultiExtract = ethers.utils.toUtf8Bytes("37fbf90b772143a1b91e3726348bcfcc");
     [owner] = await ethers.getSigners();
-    GetAnyData = await new GetAnyData__factory(owner).deploy(chainlinkToken, chainlinkOracle, jobIdForExtract, jobIdForMatch);
+    GetAnyData = await new GetAnyData__factory(owner).deploy(chainlinkToken, chainlinkOracle, jobIdForExtract, jobIdForMatch, jobIdForMultiExtract);
     await GetAnyData.deployed();
     console.log(`GetAnyData contract Address: ${GetAnyData.address}`);
     await new Promise(r => setTimeout(r, 30000));
