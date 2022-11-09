@@ -112,13 +112,13 @@ contract AnyDataRequester is ChainlinkClient, ConfirmedOwner {
     function fulfillMultiExtract(
         bytes32 _requestId,
         uint _requestStatus,
-        string[] memory _result
+        bytes memory _result
     )
         external
         recordChainlinkFulfillment(_requestId)
         checkResponseStatus(_requestId, _requestStatus)
     {
-        multipliExtractTextResult = _result;
+        multipliExtractTextResult = abi.decode(_result, (string[]));
     }
 
     function fulfillMatch(

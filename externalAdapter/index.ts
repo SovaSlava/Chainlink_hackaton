@@ -1,4 +1,5 @@
 import { Requester, Validator } from '@chainlink/ea-bootstrap'
+import { ethers } from "ethers";
 const customError = (data: string) => {
   return false
 }
@@ -116,7 +117,7 @@ export const createRequest = async (
         }
       }
       else {
-        callback({ jobRunID, data: { requestStatus: 0, result: tempResArray } })
+        callback({ jobRunID, data: { requestStatus: 0, result: ethers.utils.defaultAbiCoder.encode(["string[]"], [tempResArray]) } })
       }
     }
     else if (jobType == "match") {
