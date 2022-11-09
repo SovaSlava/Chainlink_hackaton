@@ -27,7 +27,8 @@ const CustomParams = {
 
 const errorStatus = {
   "connectError": 1,
-  "regexpError": 2
+  "regexpError": 2,
+  "noSuchIndex": 3
 };
 
 type defaultArgsTypes = {
@@ -109,15 +110,15 @@ export const createRequest = async (
       Array.from(found, (res) => tempResArray.push(res[1]));
       if (jobType == "extract") {
         if (Number(input.data["matchIndex"]) < tempResArray.length) {
-          resArray.push(tempResArray[Number(input.data["matchIndex"])]);
+          callback({ jobRunID, data: { requestStatus: 0, result: tempResArray[Number(input.data["matchIndex"])] } })
+        }
+        else {
+          callback({ jobRunID, data: { requestStatus: errorStatus.noSuchIndex, result: defaultArgs[jobType as keyof defaultArgsTypes] } })
         }
       }
       else {
-        resArray = tempResArray;
-
+        callback({ jobRunID, data: { requestStatus: 0, result: resArray } })
       }
-
-      callback({ jobRunID, data: { requestStatus: 0, result: resArray } })
     }
     else if (jobType == "match") {
       callback({ jobRunID, data: { requestStatus: 0, result: re.test(response.data) } })
