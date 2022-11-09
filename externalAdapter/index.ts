@@ -39,7 +39,7 @@ type defaultArgsTypes = {
 const defaultArgs: defaultArgsTypes = {
   "match": false,
   "extract": "",
-  "multiExtract": []
+  "multiExtract": [""]
 };
 type jobTypeArg = "match" | "extract" | "multiExtract";
 export const createRequest = async (
@@ -88,7 +88,6 @@ export const createRequest = async (
   }
 
   let tempResArray: string[] = [];
-  let resArray: string[] = [];
   let parseRegExp: string[][];
   let clearRegExp: string;
   let flags: string;
@@ -117,7 +116,7 @@ export const createRequest = async (
         }
       }
       else {
-        callback({ jobRunID, data: { requestStatus: 0, result: resArray } })
+        callback({ jobRunID, data: { requestStatus: 0, result: tempResArray } })
       }
     }
     else if (jobType == "match") {
