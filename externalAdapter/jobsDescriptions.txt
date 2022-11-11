@@ -1,0 +1,128 @@
+match:
+
+
+type = "directrequest"
+schemaVersion = 1
+name = "rmatch"
+externalJobID = "37fbf90b-7721-43a1-b91e-3726348bcfcc"
+maxTaskDuration = "0s"
+contractAddress = "0xD2B084349963897762FA223b3C2B72AC0378Ccfd"
+minContractPaymentLinkJuels = "0"
+observationSource = """
+
+ decode_log   [type="ethabidecodelog"
+                  abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                  data="$(jobRun.logData)"
+                  topics="$(jobRun.logTopics)"]
+
+decode_cbor  [type=cborparse data="$(decode_log.data)"]
+
+fetch        [type=bridge name="rextract" requestData="{\\"id\\": $(jobSpec.externalJobID), \\"jobType\\":\\"match\\", \\"data\\": { \\"url\\": $(decode_cbor.url), \\"regexp\\": $(decode_cbor.regexp) }}"]
+
+ decode_log -> decode_cbor -> fetch
+ 
+ parse_result        [type=jsonparse path="data,result" data="$(fetch)"]
+ parse_status        [type=jsonparse path="data,requestStatus" data="$(fetch)"]
+
+fetch -> parse_result
+fetch -> parse_status
+
+ encode_data  [type="ethabiencode" abi="(bytes32 requestId, uint256 _requestStatus, bool result)" data="{ \\"requestId\\": $(decode_log.requestId), \\"_requestStatus\\":$(parse_status),  \\"result\\": $(parse_result) }"]
+
+parse_result -> encode_data
+parse_status -> encode_data
+
+     encode_tx    [type="ethabiencode"
+                  abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+                  data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
+                  ]
+    submit_tx    [type="ethtx" to="0xD2B084349963897762FA223b3C2B72AC0378Ccfd" data="$(encode_tx)"]
+
+     encode_data -> encode_tx -> submit_tx
+"""
+
+
+extract:
+
+type = "directrequest"
+schemaVersion = 1
+name = "rextract"
+externalJobID = "e7fb2c89-29c6-47d0-96c6-ab4a04c2ea22"
+maxTaskDuration = "0s"
+contractAddress = "0xD2B084349963897762FA223b3C2B72AC0378Ccfd"
+minContractPaymentLinkJuels = "0"
+observationSource = """
+
+ decode_log   [type="ethabidecodelog"
+                  abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                  data="$(jobRun.logData)"
+                  topics="$(jobRun.logTopics)"]
+
+decode_cbor  [type=cborparse data="$(decode_log.data)"]
+
+fetch        [type=bridge name="rextract" requestData="{\\"id\\": $(jobSpec.externalJobID), \\"jobType\\":\\"extract\\", \\"data\\": { \\"url\\": $(decode_cbor.url), \\"regexp\\": $(decode_cbor.regexp), \\"matchIndex\\":$(decode_cbor.matchIndex) }}"]
+
+ decode_log -> decode_cbor -> fetch
+ 
+ parse_result        [type=jsonparse path="data,result" data="$(fetch)"]
+ parse_status        [type=jsonparse path="data,requestStatus" data="$(fetch)"]
+
+fetch -> parse_result
+fetch -> parse_status
+
+ encode_data  [type="ethabiencode" abi="(bytes32 requestId, uint256 _requestStatus, string result)" data="{ \\"requestId\\": $(decode_log.requestId), \\"_requestStatus\\":$(parse_status),  \\"result\\": $(parse_result) }"]
+
+parse_result -> encode_data
+parse_status -> encode_data
+
+     encode_tx    [type="ethabiencode"
+                  abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+                  data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
+                  ]
+    submit_tx    [type="ethtx" to="0xD2B084349963897762FA223b3C2B72AC0378Ccfd" data="$(encode_tx)"]
+
+     encode_data -> encode_tx -> submit_tx
+"""
+
+
+multiextract:
+
+type = "directrequest"
+schemaVersion = 1
+name = "rmultimatch"
+externalJobID = "bede1e53-f90f-4f09-a56e-1da334aea84a"
+maxTaskDuration = "0s"
+contractAddress = "0xD2B084349963897762FA223b3C2B72AC0378Ccfd"
+minContractPaymentLinkJuels = "0"
+observationSource = """
+
+ decode_log   [type="ethabidecodelog"
+                  abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                  data="$(jobRun.logData)"
+                  topics="$(jobRun.logTopics)"]
+
+decode_cbor  [type=cborparse data="$(decode_log.data)"]
+
+fetch        [type=bridge name="rextract" requestData="{\\"id\\": $(jobSpec.externalJobID), \\"jobType\\":\\"multiExtract\\", \\"data\\": { \\"url\\": $(decode_cbor.url), \\"regexp\\": $(decode_cbor.regexp) }}"]
+
+ decode_log -> decode_cbor -> fetch
+ 
+ parse_result        [type=jsonparse path="data,result" data="$(fetch)"]
+ parse_status        [type=jsonparse path="data,requestStatus" data="$(fetch)"]
+
+fetch -> parse_result
+fetch -> parse_status
+
+ encode_data  [type="ethabiencode" abi="(bytes32 requestId, uint256 _requestStatus, bytes _result)" data="{ \\"requestId\\": $(decode_log.requestId), \\"_requestStatus\\":$(parse_status),  \\"_result\\": $(parse_result) }"]
+
+parse_result -> encode_data
+parse_status -> encode_data
+
+     encode_tx    [type="ethabiencode"
+                  abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+                  data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
+                  ]
+    submit_tx    [type="ethtx" to="0xD2B084349963897762FA223b3C2B72AC0378Ccfd" data="$(encode_tx)"]
+
+     encode_data -> encode_tx -> submit_tx
+"""
