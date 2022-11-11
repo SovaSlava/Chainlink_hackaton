@@ -28,20 +28,20 @@ How launch chainlink node, describe jobs, how external adapters work.
 
 ## How to use it
 Contract in goerli - https://goerli.etherscan.io/address/0x49d042d1f5933C6322568DD140241B9730ab98c5
-** Get second headline from chainlink press page **
+#### Get second headline from chainlink press page
 Use function "extractText"
 * url - https://chain.link/press/
 * regexp - /h3-newstitle\">(.*?)</gim
 * matchIndex - 1 (because it starts from 0)
 Wait about 1 minute.. and you can read extracted data using function extractTextResult 
 
-** Get all sections's names  from docs.openzeppelin.com **
+#### Get all sections's names  from docs.openzeppelin.com
 Use function "multiExtractText"
 * url - https://docs.openzeppelin.com/
 * regexp - /card-title\">(.*?)</span/gim
 Wait about 1 minute.. and you can read extracted data using function multipliExtractTextResult
 
-** If ipfs file contains word with part "EDU" **
+#### If ipfs file contains word with part "EDU" 
 Use function isTextMatch
 * url - ipfs://QmSc6z1migCZKy9npZ4SjxQ5XPqeTqPL3qwgJweeJaYTwv
 * regexp - /EDU/gim
