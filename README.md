@@ -56,3 +56,8 @@ docker run -d --restart=on-failure -p 8080:8080 -it adapter:latest
 ```
 Jobs descriptions you can find in file jobsDescriptions.txt 
 You should change oracle address in job descriptions to you own oracle address.
+
+Status description:
+0 - OK
+1 - error in regular expression
+2 - no such match-index
